@@ -29,10 +29,20 @@ def create_app(test_config=None):
     db = SQLAlchemy(model_class=Base)
     db.init_app(app)
 
+
+    # Define model for user
+    class user(db.Model):
+        uid = mapped_column(db.Integer, primary_key=True)
+        username = mapped_column(db.String, nullable=False)
+        password = mapped_column(db.String, nullable=False)
+        eventdate = mapped_column(db.String, db.ForeignKey('event.date'))
+        event = db.relationship('Event', backref='users')
+
     # Define model for event
     class Event(db.Model):
         date = mapped_column(db.String, primary_key=True)
         event = mapped_column(db.String)
+        user = db.relationship('user', backref='events')
 
     @click.command('init-db')
     def init_db_command():
