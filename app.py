@@ -5,6 +5,7 @@ import click
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+#this is a main version
 
 def create_app(test_config=None):
     # Create the Flask app
