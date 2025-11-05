@@ -1,0 +1,62 @@
+{
+  "name": "Flask App Dev",
+  // We already have a Dockerfile at the repo root.
+  // IMPORTANT: build.context is the REPO ROOT (..), not .devcontainer/
+  "build": {
+    "context": "..",
+    "dockerfile": "../Dockerfile",
+    // (Optional) pass args your Dockerfile expects
+    "args": {
+      "PYTHON_VERSION": "3.12"
+    }
+  },
+  // Where the repo is mounted in the container
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached",
+  // Make Flask reachable from the host
+  "forwardPorts": [
+    5000
+  ],
+  "portsAttributes": {
+    "5000": {
+      "label": "Flask"
+    }
+  },
+  // Handy environment defaults for dev
+  "containerEnv": {
+    "FLASK_ENV": "development",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONUNBUFFERED": "1"
+  },
+  // Auto-install extensions INSIDE the container
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-toolsai.jupyter",
+        "ms-azuretools.vscode-docker",
+        "ms-python.isort",
+        "batisteo.vscode-django", // good for Jinja/templating too
+        "ms-python.debugpy" // debugger glue
+      ],
+      "settings": {
+        "python.formatting.provider": "black",
+        "editor.formatOnSave": true,
+        "python.analysis.typeCheckingMode": "basic",
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      }
+    }
+  },
+  // Runs once after the container is created
+  "postCreateCommand": "python -m pip install --upgrade pip && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi",
+  // Start the dev server every time the container starts (optional)
+  // comment out if you prefer running manually or using the debugger
+  "postStartCommand": "bash -lc 'if [ -f app.py ]; then flask --app app run --host 0.0.0.0 --port 5000; fi'",
+  // If your base image isn’t a devcontainers/* image, you likely are root.
+  // Either keep root or create/set a non-root user in your Dockerfile.
+  "remoteUser": "root",
+  // Stop the container when you close the window
+  "shutdownAction": "stopContainer"
+}
