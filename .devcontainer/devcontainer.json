@@ -1,34 +1,59 @@
 {
   "name": "Flask App Dev",
-  // We already have a Dockerfile at the repo root.
-  // IMPORTANT: build.context is the REPO ROOT (..), not .devcontainer/
+
+  // -------------------------------------------------------------
+  // BUILD SETTINGS
+  // -------------------------------------------------------------
   "build": {
+    // Use the repo root as build context
     "context": "..",
     "dockerfile": "../Dockerfile",
-    // (Optional) pass args your Dockerfile expects
     "args": {
       "PYTHON_VERSION": "3.12"
     }
   },
-  // Where the repo is mounted in the container
+
+  // -------------------------------------------------------------
+  // WORKSPACE MOUNT
+  // -------------------------------------------------------------
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached",
-  // Make Flask reachable from the host
-  "forwardPorts": [
-    5000
+
+  // -------------------------------------------------------------
+  // SSH FORWARDING (allows git push/pull using your host SSH agent)
+  // -------------------------------------------------------------
+  "runArgs": [
+  "-v", "/root/.ssh/agent.sock:/ssh-agent",
+  "-e", "SSH_AUTH_SOCK=/ssh-agent"
   ],
+  "mounts": [
+    "source=/root/.ssh,target=/root/.ssh,type=bind,consistency=cached"
+  ],
+  "remoteUser": "root",
+
+  // -------------------------------------------------------------
+  // USER & NETWORK
+  // -------------------------------------------------------------
+
+  "forwardPorts": [5000],
   "portsAttributes": {
     "5000": {
       "label": "Flask"
     }
   },
-  // Handy environment defaults for dev
+
+  // -------------------------------------------------------------
+  // ENVIRONMENT VARIABLES INSIDE CONTAINER
+  // -------------------------------------------------------------
   "containerEnv": {
     "FLASK_ENV": "development",
     "PYTHONDONTWRITEBYTECODE": "1",
     "PYTHONUNBUFFERED": "1"
   },
-  // Auto-install extensions INSIDE the container
+
+  // -------------------------------------------------------------
+  // VS CODE SETTINGS AND EXTENSIONS (auto-installed inside container)
+  // -------------------------------------------------------------
   "customizations": {
     "vscode": {
       "extensions": [
@@ -38,8 +63,8 @@
         "ms-toolsai.jupyter",
         "ms-azuretools.vscode-docker",
         "ms-python.isort",
-        "batisteo.vscode-django", // good for Jinja/templating too
-        "ms-python.debugpy" // debugger glue
+        "batisteo.vscode-django",
+        "ms-python.debugpy"
       ],
       "settings": {
         "python.formatting.provider": "black",
@@ -49,14 +74,15 @@
       }
     }
   },
-  // Runs once after the container is created
+
+  // -------------------------------------------------------------
+  // CONTAINER LIFECYCLE COMMANDS
+  // -------------------------------------------------------------
   "postCreateCommand": "python -m pip install --upgrade pip && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi",
-  // Start the dev server every time the container starts (optional)
-  // comment out if you prefer running manually or using the debugger
   "postStartCommand": "bash -lc 'if [ -f app.py ]; then flask --app app run --host 0.0.0.0 --port 5000; fi'",
-  // If your base image isn’t a devcontainers/* image, you likely are root.
-  // Either keep root or create/set a non-root user in your Dockerfile.
-  "remoteUser": "root",
-  // Stop the container when you close the window
+
+  // -------------------------------------------------------------
+  // CLEAN EXIT
+  // -------------------------------------------------------------
   "shutdownAction": "stopContainer"
 }
