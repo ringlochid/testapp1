@@ -1,6 +1,5 @@
 {
   "name": "Flask App Dev",
-
   // -------------------------------------------------------------
   // BUILD SETTINGS
   // -------------------------------------------------------------
@@ -12,36 +11,35 @@
       "PYTHON_VERSION": "3.12"
     }
   },
-
   // -------------------------------------------------------------
   // WORKSPACE MOUNT
   // -------------------------------------------------------------
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached",
-
   // -------------------------------------------------------------
   // SSH FORWARDING (allows git push/pull using your host SSH agent)
   // -------------------------------------------------------------
   "runArgs": [
-  "-v", "/root/.ssh/agent.sock:/ssh-agent",
-  "-e", "SSH_AUTH_SOCK=/ssh-agent"
+    "-v",
+    "/root/.ssh/agent.sock:/ssh-agent",
+    "-e",
+    "SSH_AUTH_SOCK=/ssh-agent"
   ],
   "mounts": [
-    "source=/root/.ssh,target=/root/.ssh,type=bind,consistency=cached"
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
   ],
   "remoteUser": "root",
-
   // -------------------------------------------------------------
   // USER & NETWORK
   // -------------------------------------------------------------
-
-  "forwardPorts": [5000],
+  "forwardPorts": [
+    5000
+  ],
   "portsAttributes": {
     "5000": {
       "label": "Flask"
     }
   },
-
   // -------------------------------------------------------------
   // ENVIRONMENT VARIABLES INSIDE CONTAINER
   // -------------------------------------------------------------
@@ -50,7 +48,6 @@
     "PYTHONDONTWRITEBYTECODE": "1",
     "PYTHONUNBUFFERED": "1"
   },
-
   // -------------------------------------------------------------
   // VS CODE SETTINGS AND EXTENSIONS (auto-installed inside container)
   // -------------------------------------------------------------
@@ -74,13 +71,11 @@
       }
     }
   },
-
   // -------------------------------------------------------------
   // CONTAINER LIFECYCLE COMMANDS
   // -------------------------------------------------------------
   "postCreateCommand": "python -m pip install --upgrade pip && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi",
-  "postStartCommand": "bash -lc 'if [ -f app.py ]; then flask --app app run --host 0.0.0.0 --port 5000; fi'",
-
+  "postStartCommand": "bash -lc 'chmod 700 ~/.ssh || true; chmod 600 ~/.ssh/* 2>/dev/null || true; if [ -f app.py ]; then FLASK_APP=app flask run --host 0.0.0.0 --port 5000 > /tmp/flask.log 2>&1 & echo Flask started on 0.0.0.0:5000; fi'",
   // -------------------------------------------------------------
   // CLEAN EXIT
   // -------------------------------------------------------------
