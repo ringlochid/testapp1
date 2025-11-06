@@ -1,4 +1,4 @@
-print("Hello from A")
+print("Hello from B")
 import os
 import datetime
 import click
