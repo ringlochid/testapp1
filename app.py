@@ -1,18 +1,20 @@
-print("Hello from B")
+from flask import Flask, render_template, request, redirect, url_for
 import os
 import datetime
 import click
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-#this is a main version
+
+# this is a main version
+
 
 def create_app(test_config=None):
     # Create the Flask app
     app = Flask(__name__, instance_relative_config=True)
 
-    app.config.from_pyfile('config.py', silent=True)
-    app.config.from_mapping(SECRET_KEY='dev')
+    app.config.from_pyfile("config.py", silent=True)
+    app.config.from_mapping(SECRET_KEY="dev")
 
     # Ensure instance folder exists
     try:
@@ -35,24 +37,30 @@ def create_app(test_config=None):
         date = mapped_column(db.String, primary_key=True)
         event = mapped_column(db.String)
 
-    @click.command('init-db')
+    @click.command("init-db")
     def init_db_command():
         """Command for initializing the database"""
         with app.app_context():
             db.create_all()
-            click.echo('Database created successfully')
+            click.echo("Database created successfully")
 
     app.cli.add_command(init_db_command)
 
-    @app.route('/', methods=['GET', 'POST'])
+    @app.route("/", methods=["GET", "POST"])
     def home():
-        if request.method == 'POST':
-            db.session.add(Event(date=datetime.datetime.now().__str__(), event=request.form['eventBox'])) # type: ignore
+        if request.method == "POST":
+            db.session.add(Event(date=datetime.datetime.now().__str__(), event=request.form["eventBox"]))  # type: ignore
             db.session.commit()
-            return redirect(url_for('home'))
-        return render_template('home.html', eventsList=db.session.execute(db.select(Event).order_by(Event.date)).scalars())
+            return redirect(url_for("home"))
+        return render_template(
+            "home.html",
+            eventsList=db.session.execute(
+                db.select(Event).order_by(Event.date)
+            ).scalars(),
+        )
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()
