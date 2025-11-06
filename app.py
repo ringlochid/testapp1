@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, render_template, request
+print("Hello from A")
 import os
 import datetime
 import click
